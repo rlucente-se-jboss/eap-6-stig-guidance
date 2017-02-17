@@ -9,9 +9,8 @@ hereafter referred to simply as the
 with its [release
 memo](http://iasecontent.disa.mil/stigs/pdf/u_JBoss_EAP_6-3_stig_release_memo.pdf).
 Those links are to the official released documents by DISA and they
-should be the normative standard.  All of the content in this
-repository will be shared with DISA for possible inclusion in future
-releases of the STIG.
+should be the normative standard.  It's my hope that this content
+will appear in future releases of the STIG.
 
 STIG Items
 ==========
