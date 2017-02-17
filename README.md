@@ -13,3 +13,8 @@ should be the normative standard.  All of the content in this
 repository will be shared with DISA for possible inclusion in future
 releases of the STIG.
 
+STIG Items
+==========
+
+* [JBOS-AS-000010 - HTTP management session traffic must be encrypted.](JBOS-AS-000010/README.md)
+ 
