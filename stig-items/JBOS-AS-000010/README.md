@@ -30,12 +30,14 @@ module](https://www.bouncycastle.org/fips-java).
 NB:  The FIPS vault code is provided as an example only and it is
 not supported by Red Hat.
 
+# Additional Fix Text Guidance
+
 ## RHEL 7.3 Instructions using NSS DB
 Rather than using JKS keystores, you can also leverage the Mozilla
 Network Security Services on RHEL to have FIPS 140-2 compliant
 crypto used for TLS connections.  The specific steps follow.
 
-### Configure SunPKCS11-nss Provider
+### Configure SunPKCS11-NSS Provider
 This can be done two ways, with each option described below.
 
 #### Option 1 - Edit the JRE Files
@@ -102,4 +104,34 @@ This approach assumes each account running java has a defined home
 directory.
 
 #### Option 2 - Override the JRE Files
+Rather than edit a system-wide setting, each user on a host can
+have their own `java.security` policy using the java security
+overrides feature.  To do this, define a user-specific
+`$HOME/java.security.properties` file that contains only the following
+content:
 
+    #
+    # List of providers and their preference orders (see above):
+    #
+    security.provider.1=sun.security.pkcs11.SunPKCS11 ${user.home}/nss.cfg
+    security.provider.2=sun.security.provider.Sun
+    security.provider.3=sun.security.rsa.SunRsaSign
+    security.provider.4=sun.security.ec.SunEC
+    security.provider.5=com.sun.net.ssl.internal.ssl.Provider SunPKCS11-NSS
+    security.provider.6=com.sun.crypto.provider.SunJCE
+    security.provider.7=sun.security.jgss.SunProvider
+    security.provider.8=com.sun.security.sasl.Provider
+    security.provider.9=org.jcp.xml.dsig.internal.dom.XMLDSigRI
+    security.provider.10=sun.security.smartcardio.SunPCSC
+
+You'll need to define the `nss.cfg` file as described in option 1,
+but you can also locate the nssdb directory in the user's home
+directory rather than a system-wide location.
+
+To use the property overrides, add the following line to
+`$EAP_HOME/bin/standalone.conf` or `$EAP_HOME/bin/domain.conf`
+depending on whether you're running in standalone or domain mode:
+
+    JAVA_OPTS="$JAVA_OPTS -Djava.security.properties=$HOME/java.security.properties"
+
+This also assumes that each user has their own EAP installation.
