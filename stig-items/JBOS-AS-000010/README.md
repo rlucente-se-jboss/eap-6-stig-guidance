@@ -135,3 +135,53 @@ depending on whether you're running in standalone or domain mode:
     JAVA_OPTS="$JAVA_OPTS -Djava.security.properties=$HOME/java.security.properties"
 
 This also assumes that each user has their own EAP installation.
+
+### Configure the NSS Database
+Once the SunPKCS11 provider is defined for Java, we must configure the NSS database.  If using a system-wide database, please do the following:
+
+    sudo mkdir -p /etc/nssdb
+    sudo restorecon -vFr /etc/nssdb
+
+If using a user-local database, please do the following:
+
+    mkdir -p $HOME/nssdb
+
+Create the files for the database.  This is documented in section
+XXX of [How to Configure Server Security](YYY).  The following
+examples use an `/etc/nssdb` directory.  If configuring a user-local
+database, you can drop the `sudo` and use the appropriate location
+for the `nssdb` database directory.
+
+    sudo modutil -force -create -dbdir sql:/etc/nssdb
+    sudo modutil -force -fips true -dbdir sql:/etc/nssdb
+
+Set the PIN for the `nssdb` database.  The PIN is a FIPS compliant
+password which must be at least seven characters in length and
+include characters from at least three of the following classes:
+
+* ASCII digits
+* lowercase ASCII
+* uppercase ASCII
+* non-alphanumeric ASCII
+* non-ASCII
+
+If an ASCII uppercase letter is the first character of the PIN, the
+uppercase letter is not counted toward its character class.  Similarly,
+if a digit is the last character of the PIN, the digit is not counted
+toward its character class.
+
+    sudo modutil -force -changepw "NSS FIPS 140-2 Certificate DB" \
+        -dbdir sql:/etc/nssdb
+
+Import an existing certificate for your server identity or create
+your own.  The following example uses the `certutil` utility to
+create a self-signed certificate.  Issuing `certutil --help` provides
+a laundry list of options that can be used to import existing
+certificates.
+
+    sudo certutil -N -d sql:/etc/nssdb
+    sudo certutil -S -k rsa -g 2048 -n appserver -t "u,u,u" -v 1197 -x \
+        -s "CN=localhost, OU=MYOU, O=MYORG, L=MYCITY, ST=MYSTATE, C=US" \
+        -d sql:/etc/nssdb
+
+
