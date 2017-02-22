@@ -3,7 +3,7 @@ to work with EAP 6.4.
 
 # Disclaimer
 These instructions were confirmed to work correctly on RHEL 6.8 and
-RHEL 7.x, where operating system matters, as well as EAP 6.4 CP13.
+RHEL 7.3, where operating system matters, as well as EAP 6.4 CP13.
 None of this guidance is certified or officially supported by Red
 Hat.  You must confirm that this is correct within your environment
 and with your configuration.
@@ -44,7 +44,7 @@ This can be done two ways, with each option described below.
 First, determine where your java distribution is located.  To do
 that, type the command:
 
-    java -XshowSettings:properties -version &| grep java.home
+    java -XshowSettings:properties -version |& grep java.home
 
 The showSettings option has been available since JVM 1.7 and up.
 It is not supported in 1.6 and below.  You should see output similar
@@ -57,6 +57,7 @@ Go to the `${java.home}/lib/security` folder:
     cd /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64/jre
     cd lib/security
     sudo cp java.security java.security.bak
+    sudo cp nss.cfg nss.cfg.bak
 
 Edit the file `java.security` file so that the security provider
 list looks like the following stanza.  The key changes are to add
@@ -137,10 +138,11 @@ depending on whether you're running in standalone or domain mode:
 This also assumes that each user has their own EAP installation.
 
 ### Configure the NSS Database
-Once the SunPKCS11 provider is defined for Java, we must configure the NSS database.  If using a system-wide database, please do the following:
+Once the SunPKCS11 provider is defined for Java, we must configure
+the NSS database.  If using a system-wide database, please do the
+following:
 
     sudo mkdir -p /etc/nssdb
-    sudo restorecon -vFr /etc/nssdb
 
 If using a user-local database, please do the following:
 
@@ -179,9 +181,19 @@ create a self-signed certificate.  Issuing `certutil --help` provides
 a laundry list of options that can be used to import existing
 certificates.
 
-    sudo certutil -N -d sql:/etc/nssdb
     sudo certutil -S -k rsa -g 2048 -n appserver -t "u,u,u" -v 1197 -x \
         -s "CN=localhost, OU=MYOU, O=MYORG, L=MYCITY, ST=MYSTATE, C=US" \
         -d sql:/etc/nssdb
+
+For a system-wide database, make sure that the files are readable
+and have the correct SELinux context:
+
+    sudo chmod -R a+r /etc/nssdb
+    sudo restorecon -vFr /etc/nssdb
+
+You can review the contents of the database using the following commands:
+
+    sudo certutil -K -d sql:/etc/nssdb
+    sudo certutil -L -d sql:/etc/nssdb
 
 
