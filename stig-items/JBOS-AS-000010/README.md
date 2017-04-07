@@ -35,7 +35,7 @@ not supported by Red Hat.
 ## RHEL 7.3 Instructions using NSS DB
 Rather than using JKS keystores, you can also leverage the Mozilla
 Network Security Services on RHEL to have FIPS 140-2 compliant
-crypto used for TLS connections.  The specific steps follow.
+cryptography used for TLS connections.  The specific steps follow.
 
 ### Configure SunPKCS11-NSS Provider
 This can be done two ways, with each option described below.
@@ -195,5 +195,19 @@ You can review the contents of the database using the following commands:
 
     sudo certutil -K -d sql:/etc/nssdb
     sudo certutil -L -d sql:/etc/nssdb
+
+### Configure the NSS Database
+Now pick up with section 2.2.2.2.2 of the vendor document [How to
+Configure Server
+Security](https://access.redhat.com/documentation/en/red-hat-jboss-enterprise-application-platform/6.4/paged/how-to-configure-server-security/chapter-2-securing-the-server-and-its-interfaces)
+to ensure the Management Console Binds to HTTPS.
+
+These instructions refer to a directory location EAP_HOME which
+should match the directory containing the EAP installation, e.g.
+`/path/to/jboss-eap-6.4`.
+
+Please follow the instructions in the vendor documentation but also realize that you can specify multiple authentication mechanisms besides just a file-based solution as discussed in the documentation.  For instance, the ManagementRealmHTTPS security realm can be pointed to an Active Directory or LDAP authentication source.  Section 2.2.5 discusses 2-way TLS for the management interface.  
+
+For section 2.2.2.6.6 "Configure the Management Console to Use the Keystore", make the following changes to use the NSSDB instead:
 
 
